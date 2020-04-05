@@ -1,52 +1,84 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Graph
 {
-    public const int Size = 4;
-    readonly List<Point>[,] nodeArray = new List<Point>[Size, Size];
-
+    public int Id { get; private set; }
     public event Action OnGraphChange;
-    public void AddNode(Point node)
+    private readonly List<Node> nodes;
+
+    public Graph()
     {
-        if (nodeArray[node.x, node.y] != null)
-            return;
-        nodeArray[node.x, node.y] = new List<Point>();
-        OnGraphChange?.Invoke();
+        nodes = new List<Node>();
+        SetRandomId(this);
+    }
+    public static void SetRandomId(Graph graph) => graph.Id = Random.Range(1, 10000000);
+    public static void SetId(Graph graph, int id) => graph.Id = id;
+
+    public static void AddNode(Graph graph, Node node)
+    {
+        graph.nodes.Add(node);
+        graph.OnGraphChange?.Invoke();
     }
 
-    public void AddConnection(Point node1, Point node2)
+    public static void AddConnection(Graph graph, int nodeId1, int nodeId2)
     {
-        var node1Connections = nodeArray[node1.x, node1.y];
-        var node2Connections = nodeArray[node2.x, node2.y];
-        if (node1Connections == null)
+        var node1 = graph.nodes.FirstOrDefault(n => n.Id == nodeId1);
+        var node2 = graph.nodes.FirstOrDefault(n => n.Id == nodeId2);
+        Node.ConnectNodes(node1, node2);
+        graph.OnGraphChange?.Invoke();
+    }
+    public static void AddConnection(Graph graph, List<int> nodeIds)
+    {
+        var nodeList = new List<Node>();
+        foreach (var nodeId in nodeIds)
         {
-            node1Connections = new List<Point>();
-            nodeArray[node1.x, node1.y] = node1Connections;
+            var node = graph.nodes.FirstOrDefault(n => n.Id == nodeId);
+            if(node == null)
+                throw new NullReferenceException("Node with id " + nodeId + " not found in Graph with id " + graph.Id);
+            nodeList.Add(node);
         }
+        Node.ConnectNodes(nodeList);
+        graph.OnGraphChange?.Invoke();
+    }
 
-        if (node2Connections == null)
+    public static void RemoveConnection(Graph graph, int nodeId1, int nodeId2)
+    {
+        var node1 = graph.nodes.FirstOrDefault(n => n.Id == nodeId1);
+        var node2 = graph.nodes.FirstOrDefault(n => n.Id == nodeId2);
+        Node.UnConnectNodes(node1, node2);
+        graph.OnGraphChange?.Invoke();
+    }
+    internal static void RemoveConnection(Graph graph, List<int> nodeIds)
+    {
+        var nodeList = new List<Node>();
+        foreach (var nodeId in nodeIds)
         {
-            node2Connections = new List<Point>();
-            nodeArray[node2.x, node2.y] = node2Connections;
+            var node = graph.nodes.FirstOrDefault(n => n.Id == nodeId);
+            if (node == null)
+                throw new NullReferenceException("Node with id " + nodeId + " not found in Graph with id " + graph.Id);
+            nodeList.Remove(node);
         }
-        //TODO: 'Contains' method might be checking for the exact object instance. So, make sure it is working well with different Point instances.
-        if (!node1Connections.Contains(node2))
-            node1Connections.Add(node2);
-        if (!node2Connections.Contains(node1))
-            node2Connections.Add(node1);
-
-        OnGraphChange?.Invoke();
+        Node.ConnectNodes(nodeList);
+        graph.OnGraphChange?.Invoke();
     }
 }
 
-public struct Point
+
+public static class StaticValues
 {
-    public int x, y;
-    public Point(int px, int py)
+    public static Color[] ColorByIndex = new Color[]
     {
-        x = px;
-        y = py;
-    }
-}
+        new Color(0,0,0,1),
+        new Color(1,0,0,1), 
+        new Color(0,1,0,1), 
+        new Color(0,0,1,1), 
+        new Color(1,1,0,1), 
+        new Color(1,0,1,1), 
+        new Color(0,1,1,1), 
+    };
 
+}
