@@ -43,6 +43,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7af7c1068a1ef8845bd348eba20d9c12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Scale: 1
+  ProcessUserInput: 0
   NodePrefab: {fileID: 8667970890054956891, guid: c478b81606210bf4f9077fb5eb9d341e,
     type: 3}
   ConnectionLinePrefab: {fileID: 1438111544626675464, guid: c560c132b72def2489b50129dc670472,

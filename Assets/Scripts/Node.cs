@@ -7,8 +7,15 @@ using Random = UnityEngine.Random;
 
 public class Node : MonoBehaviour
 {
+    public int GraphId;
     public int Id { get; private set; }
     public int Number { get; private set; }
+
+    public float Scale
+    {
+        set => transform.localScale = new Vector3(value, value, value);
+    }
+
     private List<Node> Connections { get; set; }
 
     void Start()
@@ -35,9 +42,9 @@ public class Node : MonoBehaviour
         {
             for (int j = i + 1; j < nodes.Count; j++)
             {
-                if (nodes[i].Connections.All(n => n.Id == nodes[j].Id))
+                if (!nodes[i].Connections.Exists(n => n.Id == nodes[j].Id))
                     nodes[i].Connections.Add(nodes[j]);
-                if (nodes[j].Connections.All(n => n.Id == nodes[i].Id))
+                if (!nodes[j].Connections.Exists(n => n.Id == nodes[i].Id))
                     nodes[j].Connections.Add(nodes[i]);
             }
         }

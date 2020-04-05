@@ -4,7 +4,13 @@ public class ConnectionLine : MonoBehaviour
 {
     public Node Node1;
     public Node Node2;
-    
+
+    public int GraphId;
+
+    public float Scale
+    {
+        set => GetComponent<LineRenderer>().startWidth = value * 0.04f;
+    }
 
     private LineRenderer lineRenderer;
     private MeshCollider meshCollider;
@@ -23,7 +29,7 @@ public class ConnectionLine : MonoBehaviour
         lineRenderer.SetPosition(1, pos2);
     }
 
-    public void ConnectNodes(Node node1, Node node2)
+    public void SetConnectedNodes(Node node1, Node node2)
     {
         Node1 = node1;
         Node2 = node2;
@@ -33,7 +39,7 @@ public class ConnectionLine : MonoBehaviour
         lineRenderer.SetPosition(1, node2.transform.position);
 
         Mesh mesh = new Mesh();
-        lineRenderer.BakeMesh(mesh, true);
+        lineRenderer.BakeMesh(mesh, false);
         meshCollider.sharedMesh = mesh;
         meshCollider.enabled = true;
     }

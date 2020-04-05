@@ -18,8 +18,17 @@ public class Graph
     public static void SetRandomId(Graph graph) => graph.Id = Random.Range(1, 10000000);
     public static void SetId(Graph graph, int id) => graph.Id = id;
 
+    public static void SetNodeScale(Graph graph, float scale)
+    {
+        foreach (var node in graph.nodes)
+        {
+            node.Scale = scale;
+        }
+    }
+
     public static void AddNode(Graph graph, Node node)
     {
+        node.GraphId = graph.Id;
         graph.nodes.Add(node);
         graph.OnGraphChange?.Invoke();
     }

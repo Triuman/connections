@@ -8,7 +8,7 @@ public class InputController : MonoBehaviour
     public event System.Action<Vector2, Transform> OnMouseUp;
     public event System.Action<Vector2, Transform> OnMouseMove;
     
-    void Start()
+    void Awake()
     {
         instance = this;
     }
