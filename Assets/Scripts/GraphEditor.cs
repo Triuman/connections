@@ -42,7 +42,7 @@ public class GraphEditor : MonoBehaviour
             for (int j = 0; j < rowCount; j++)
             {
                 var node = Instantiate(NodePrefab,
-                    transform.position + new Vector3(-width / 2 + i * width / columnCount, -height / 2 + j * height / rowCount), Quaternion.identity,
+                    transform.position + new Vector3(-width / 2 + i * width / (columnCount - 1), -height / 2 + j * height / (rowCount - 1)), Quaternion.identity,
                     transform);
                 node.Index = (i * columnCount) + j;
                 Graph.AddNode(graph, node);
@@ -85,7 +85,7 @@ public class GraphEditor : MonoBehaviour
     {
         if (!ProcessUserInput)
             return;
-        if (touchStartNode)
+        if (touchStartNode && currentLine)
         {
             currentLine.SetPositions(touchStartNode.transform.position, touchPos);
 
