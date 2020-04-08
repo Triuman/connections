@@ -28,6 +28,8 @@ public class GraphEditor : MonoBehaviour
 
     public Graph InitGraph()
     {
+        Graph.IsTwoGraphSameMatrix(new Graph(), new Graph());
+
         connectionLines = new List<ConnectionLine>();
         graph = new Graph();
         for (int i = 0; i < 6; i++)
