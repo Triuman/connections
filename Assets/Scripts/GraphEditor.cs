@@ -28,15 +28,24 @@ public class GraphEditor : MonoBehaviour
 
     public Graph InitGraph()
     {
-        Graph.IsTwoGraphSameMatrix(new Graph(), new Graph());
+        //Graph.IsTwoGraphSameMatrix(new Graph(), new Graph());
 
         connectionLines = new List<ConnectionLine>();
         graph = new Graph();
-        for (int i = 0; i < 6; i++)
+
+        int columnCount = 3;
+        int rowCount = 3;
+        float width = 1.2f;
+        float height = 1.2f;
+        for (int i = 0; i < columnCount; i++)
         {
-            for (int j = 0; j < 6; j++)
+            for (int j = 0; j < rowCount; j++)
             {
-                Graph.AddNode(graph, Instantiate(NodePrefab, transform.position + new Vector3(-0.6f + i * 1.2f / 6, -0.6f + j * 1.2f / 6), Quaternion.identity, transform));
+                var node = Instantiate(NodePrefab,
+                    transform.position + new Vector3(-width / 2 + i * width / columnCount, -height / 2 + j * height / rowCount), Quaternion.identity,
+                    transform);
+                node.Index = (i * columnCount) + j;
+                Graph.AddNode(graph, node);
             }
         }
         Graph.SetNodeScale(graph, Scale);
@@ -87,7 +96,7 @@ public class GraphEditor : MonoBehaviour
                     var node2 = hitTransform.GetComponent<Node>();
                     if (touchStartNode.Id != node2.Id && node2.GraphId == graph.Id)
                     {
-                        if (!touchStartNode.Connections.Exists(n => n.Id == node2.Id))
+                        if (!Graph.IsNodesConnectedMatrix(graph, touchStartNode.Index, node2.Index))
                         {
                             currentLine.SetPositions(touchStartNode.transform.position, hitTransform.position);
                         }
@@ -108,7 +117,7 @@ public class GraphEditor : MonoBehaviour
                 var line = hitTransform.GetComponent<ConnectionLine>();
                 if (line.GraphId == graph.Id)
                 {
-                    Graph.RemoveConnection(graph, line.Node1.Id, line.Node2.Id);
+                    Graph.RemoveConnectionMatrix(graph, line.Node1.Index, line.Node2.Index);
                     connectionLines.Remove(line);
                     Destroy(line.gameObject);
                 }
@@ -116,15 +125,15 @@ public class GraphEditor : MonoBehaviour
             else if (hitTransform.tag == "Node" && hitTransform.GetComponent<Node>().GraphId == graph.Id)
             {
                 var node2 = hitTransform.GetComponent<Node>();
-                if (touchStartNode && touchStartNode.Id != node2.Id && !touchStartNode.Connections.Exists(n => n.Id == node2.Id))
+                if (touchStartNode && touchStartNode.Id != node2.Id && !Graph.IsNodesConnectedMatrix(graph, touchStartNode.Index, node2.Index))
                 {
                     var node1 = touchStartNode;
                     currentLine.SetConnectedNodes(node1, node2);
                     currentLine.SetPositions(touchStartNode.transform.position, hitTransform.position);
                     connectionLines.Add(currentLine);
                     currentLine = null;
-                    Graph.AddConnection(graph, node1.Id, node2.Id);
-                    
+                    Graph.AddConnectionMatrix(graph, node1.Index, node2.Index);
+
                 }
             }
         }

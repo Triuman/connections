@@ -11,7 +11,7 @@ public class Graph
     private readonly List<Node> nodes;
 
     private bool[,] graphMatrix;
-    private const int GraphMatrixSize = 5; //TODO: make it 25
+    private const int GraphMatrixSize = 9; //TODO: make it 25
 
     public Graph()
     {
@@ -53,84 +53,57 @@ public class Graph
         graph.graphMatrix[node2Index, node1Index] = false;
         graph.OnGraphChange?.Invoke();
     }
+    public static bool IsNodesConnectedMatrix(Graph graph, int node1Index, int node2Index)
+    {
+        return graph.graphMatrix[node1Index, node2Index] && graph.graphMatrix[node2Index, node1Index];
+    }
 
     internal static bool IsTwoGraphSameMatrix(Graph graph1, Graph graph2)
     {
-        graph1.graphMatrix = new bool[5,5]
-        {
-            {false, true, false, true, true},
-            {true, false, true, true, false},
-            {false, true, false, false, false},
-            {true, true, false, false, true},
-            {true, false, false, true, false}
-        };
-
-        graph2.graphMatrix = new bool[5, 5]
-        {
-            {false, true, false, false, false},
-            {true, false, false, true, false},
-            {false, false, false, true, false},
-            {false, true, true, false, true},
-            {false, false, false, true, false}
-        };
-
+        var graph1MatrixTemp = graph1.graphMatrix.Clone() as bool[,];
+        var graph2MatrixTemp = graph2.graphMatrix.Clone() as bool[,];
 
         //Process matrix and put every node index into dictionary list by their connection count.
         //So, <5, [0,3,4]> means nodes 0,3 and 4 have 5 connections each.
         //After grouping them by their connection number, we will sort the matrix and permutate them.
-        var graph1IndexPointsPerCountPerNodeDic = new SortedDictionary<int, SortedDictionary<int, int>>(); //<count>, <list of indices that has same number of connections>
+        var graph1IndexListPerCountDic = new SortedDictionary<int, List<int>>(); //<count>, <list of indices that has same number of connections>
         for (int i = 0; i < GraphMatrixSize; i++)
         {
             var countOfIndex = 0;
-            int point = 0;
             for (int j = 0; j < GraphMatrixSize; j++)
             {
-                if (graph1.graphMatrix[i, j])
-                {
-                    point += (int)Mathf.Pow(j, 2);
+                if (graph1MatrixTemp[i, j])
                     countOfIndex++;
-                }
             }
 
-            if (!graph1IndexPointsPerCountPerNodeDic.ContainsKey(countOfIndex))
-                graph1IndexPointsPerCountPerNodeDic[countOfIndex] = new SortedDictionary<int, int>();
-            graph1IndexPointsPerCountPerNodeDic[countOfIndex][i] = point;
+            if (!graph1IndexListPerCountDic.ContainsKey(countOfIndex))
+                graph1IndexListPerCountDic[countOfIndex] = new List<int>();
+            graph1IndexListPerCountDic[countOfIndex].Add(i);
         }
 
 
-        var graph2IndexPointsPerCountPerNodeDic = new SortedDictionary<int, SortedDictionary<int, int>>(); //<count>, <list of indices that has same number of connections>
+        var graph2IndexListPerCountDic = new SortedDictionary<int, List<int>>(); //<count>, <list of indices that has same number of connections>
         for (int i = 0; i < GraphMatrixSize; i++)
         {
             var countOfIndex = 0;
-            int point = 0;
             for (int j = 0; j < GraphMatrixSize; j++)
             {
-                if (graph2.graphMatrix[i, j])
-                {
-                    point += (int)Mathf.Pow(j, 2);
+                if (graph2MatrixTemp[i, j])
                     countOfIndex++;
-                }
             }
 
-            if (!graph2IndexPointsPerCountPerNodeDic.ContainsKey(countOfIndex))
-                graph2IndexPointsPerCountPerNodeDic[countOfIndex] = new SortedDictionary<int, int>();
-            graph2IndexPointsPerCountPerNodeDic[countOfIndex][i] = point;
+            if (!graph2IndexListPerCountDic.ContainsKey(countOfIndex))
+                graph2IndexListPerCountDic[countOfIndex] = new List<int>();
+            graph2IndexListPerCountDic[countOfIndex].Add(i);
         }
 
         //Check if every count has same number of indices in each graph
         //eg. graph1 has 3 nodes with 2 connection and 2 nodes with 1 connection. graph2 has 2 nodes with 2 connection and 2 nodes with 1 connection. Then they are definitely not equal.
-        foreach (var graph1IndexPointsPerCountPerNode in graph1IndexPointsPerCountPerNodeDic)
+        foreach (KeyValuePair<int, List<int>> graph1IndexListPerCount in graph1IndexListPerCountDic)
         {
-            if (!graph2IndexPointsPerCountPerNodeDic.ContainsKey(graph1IndexPointsPerCountPerNode.Key) ||
-                graph2IndexPointsPerCountPerNodeDic[graph1IndexPointsPerCountPerNode.Key].Count != graph1IndexPointsPerCountPerNode.Value.Count)
+            if (!graph2IndexListPerCountDic.ContainsKey(graph1IndexListPerCount.Key) ||
+                graph2IndexListPerCountDic[graph1IndexListPerCount.Key].Count != graph1IndexListPerCount.Value.Count)
                 return false;
-            foreach (var nodePointsGraph1 in graph1IndexPointsPerCountPerNode.Value)
-            {
-                if (graph2IndexPointsPerCountPerNodeDic[graph1IndexPointsPerCountPerNode.Key][nodePointsGraph1.Key])
-                {
-                    
-                }
-            }
         }
 
 
@@ -146,35 +119,6 @@ public class Graph
         // 5 1 0 0 0 0 0
         // </not sorted>
         //
-        //
-        // 0 - 0
-        // 1 - 2
-        // 2 - 0
-        // 3 - 4
-        // 4 - 2
-        // 5 - 4
-        // 6 - 0
-        // 7 - 2
-        // 8 - 0
-        // 9 - 0
-        //10 - 0
-        //
-        //
-        //
-        // 0 - 0
-        // 1 - 0
-        // 2 - 0
-        // 3 - 2
-        // 4 - 2
-        // 5 - 4
-        // 6 - 2
-        // 7 - 0
-        // 8 - 2
-        // 9 - 2
-        //10 - 0
-        // 
-        // 
-
         // <sorted>
         //     2 5 3 4 1 0
         //
@@ -188,23 +132,23 @@ public class Graph
         // 
         //
         // 
-        //var graph1DicKeys = graph1IndexListPerCountDic.Keys.ToArray();
-        //for (int k = 0; k < graph1DicKeys.Length - 1; k++)
+        var graph1CountDicKeys = graph1IndexListPerCountDic.Keys.ToArray();
+        //for (int k = 0; k < graph1CountDicKeys.Length - 1; k++)
         //{
-        //    var indexList = graph1IndexListPerCountDic[graph1DicKeys[k]];
+        //    var indexList = graph1IndexListPerCountDic[graph1CountDicKeys[k]];
         //    for (var i = 0; i < indexList.Count; i++)
         //    {
         //        int index = indexList[i];
-        //        for (int p = k + 1; p < graph1DicKeys.Length; p++)
+        //        for (int p = k + 1; p < graph1CountDicKeys.Length; p++)
         //        {
-        //            var indexListControl = graph1IndexListPerCountDic[graph1DicKeys[k]];
+        //            var indexListControl = graph1IndexListPerCountDic[graph1CountDicKeys[k]];
         //            for (var iControl = 0; iControl < indexListControl.Count; iControl++)
         //            {
         //                int indexControl = indexListControl[iControl];
         //                if (index > indexControl)
         //                {
-        //                    MultiArrayHelper<bool>.SwapColumns(graph1.graphMatrix, index, indexControl);
-        //                    MultiArrayHelper<bool>.SwapRows(graph1.graphMatrix, index, indexControl);
+        //                    MultiArrayHelper<bool>.SwapColumns(graph1MatrixTemp, index, indexControl);
+        //                    MultiArrayHelper<bool>.SwapRows(graph1MatrixTemp, index, indexControl);
         //                    indexList[i] = indexControl;
         //                    indexListControl[iControl] = index;
         //                }
@@ -213,23 +157,30 @@ public class Graph
         //    }
         //}
 
-        //var graph2DicKeys = graph2IndexListPerCountDic.Keys.ToArray();
-        //for (int k = 0; k < graph2DicKeys.Length - 1; k++)
+        var graph2CountDicKeys = graph2IndexListPerCountDic.Keys.ToArray();
+        var combinationGraph2 = new List<int>();
+        foreach (int graph2CountDicKey in graph2CountDicKeys)
+        {
+            combinationGraph2.AddRange(graph2IndexListPerCountDic[graph2CountDicKey]);
+        }
+
+        graph2MatrixTemp = MultiArrayHelper<bool>.OrderArray(graph2MatrixTemp, combinationGraph2);
+        //for (int k = 0; k < graph2CountDicKeys.Length - 1; k++)
         //{
-        //    var indexList = graph2IndexListPerCountDic[graph2DicKeys[k]];
+        //    var indexList = graph2IndexListPerCountDic[graph2CountDicKeys[k]];
         //    for (var i = 0; i < indexList.Count; i++)
         //    {
         //        int index = indexList[i];
-        //        for (int p = k + 1; p < graph2DicKeys.Length; p++)
+        //        for (int p = k + 1; p < graph2CountDicKeys.Length; p++)
         //        {
-        //            var indexListControl = graph2IndexListPerCountDic[graph2DicKeys[k]];
+        //            var indexListControl = graph2IndexListPerCountDic[graph2CountDicKeys[k]];
         //            for (var iControl = 0; iControl < indexListControl.Count; iControl++)
         //            {
         //                int indexControl = indexListControl[iControl];
         //                if (index > indexControl)
         //                {
-        //                    MultiArrayHelper<bool>.SwapColumns(graph2.graphMatrix, index, indexControl);
-        //                    MultiArrayHelper<bool>.SwapRows(graph2.graphMatrix, index, indexControl);
+        //                    MultiArrayHelper<bool>.SwapColumns(graph2MatrixTemp, index, indexControl);
+        //                    MultiArrayHelper<bool>.SwapRows(graph2MatrixTemp, index, indexControl);
         //                    indexList[i] = indexControl;
         //                    indexListControl[iControl] = index;
         //                }
@@ -239,19 +190,39 @@ public class Graph
         //}
 
 
-        ////Permutate graphMatrix1 and check if it matches with graphMatrix2
-        //var graph1IndexPermutations = new List<List<int[]>>();
-        //for (int k = 0; k < graph1DicKeys.Length - 1; k++)
-        //{
-        //    var indexList = graph1IndexListPerCountDic[graph1DicKeys[k]];
-        //    var permutations = ListPermutations(indexList.ToArray());
-        //    graph1IndexPermutations.Add(permutations);
-        //}
+        //Permutate graphMatrix1 and check if it matches with graphMatrix2
+        var graph1IndexPermutations = new List<List<int[]>>();
+        for (int k = 0; k < graph1CountDicKeys.Length; k++)
+        {
+            var indexList = graph1IndexListPerCountDic[graph1CountDicKeys[k]];
+            var permutations = ListPermutations(indexList.ToArray());
+            graph1IndexPermutations.Add(permutations);
+        }
 
-        //var combinations = GetCombinationsOfIntLists(graph1IndexPermutations);
-        
+        var combinations = GetCombinationsOfIntLists(graph1IndexPermutations);
 
-        return true;
+        foreach (List<int> combination in combinations)
+        {
+            var graph1MatrixTempCombination = MultiArrayHelper<bool>.OrderArray(graph1MatrixTemp, combination);
+            bool isCombinationCorrect = true;
+            for (int i = 0; i < GraphMatrixSize; i++)
+            {
+                var rowGraph1 = MultiArrayHelper<bool>.GetRow(graph1MatrixTempCombination, i);
+                var rowGraph2 = MultiArrayHelper<bool>.GetRow(graph2MatrixTemp, i);
+                if (!MultiArrayHelper<bool>.CompareRows(rowGraph1, rowGraph2))
+                {
+                    isCombinationCorrect = false;
+                    break;
+                }
+            }
+
+            if (isCombinationCorrect)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static List<List<int>> GetCombinationsOfIntLists(List<List<int[]>> intLists)
@@ -267,13 +238,14 @@ public class Graph
     {
         foreach (int[] intList in intLists[intListIndex])
         {
-            currentList.AddRange(intList);
-            if (++intListIndex >= intLists.Count)
+            var newList = currentList.ToList();
+            newList.AddRange(intList);
+            if (intListIndex + 1 >= intLists.Count)
             {
-                result.Add(currentList);
-                return;
+                result.Add(newList);
+                continue;
             }
-            GetCombinationsOfIntListsRecursive(intLists, intListIndex, currentList.ToList(), result);
+            GetCombinationsOfIntListsRecursive(intLists, intListIndex + 1, newList.ToList(), result);
         }
     }
 
@@ -312,41 +284,64 @@ public class Graph
 
     public static class MultiArrayHelper<T>
     {
+
+        public static T[,] OrderArray(T[,] matrix, List<int> indexOrder)
+        {
+            var resultMatrix = matrix.Clone() as T[,];
+            for (int i = 0; i < indexOrder.Count; i++)
+            {
+                resultMatrix = SwapColumns(resultMatrix, i, indexOrder[i]);
+                resultMatrix = SwapRows(resultMatrix, i, indexOrder[i]);
+                for (int j = 0; j < indexOrder.Count; j++)
+                {
+                    if (indexOrder[j] == i)
+                    {
+                        indexOrder[j] = indexOrder[i];
+                    }
+                }
+            }
+            return resultMatrix;
+        }
+
         public static T[,] SwapColumns(T[,] matrix, int index1, int index2)
         {
+            var resultMatrix = matrix.Clone() as T[,];
             var column1 = GetColumn(matrix, index1);
             var column2 = GetColumn(matrix, index2);
 
-            SetColumn(matrix, index1, column2);
-            SetColumn(matrix, index2, column1);
+            resultMatrix = SetColumn(resultMatrix, index1, column2);
+            resultMatrix = SetColumn(resultMatrix, index2, column1);
 
-            return matrix;
+            return resultMatrix;
         }
         public static T[,] SwapRows(T[,] matrix, int index1, int index2)
         {
+            var resultMatrix = matrix.Clone() as T[,];
             var row1 = GetRow(matrix, index1);
             var row2 = GetRow(matrix, index2);
 
-            SetRow(matrix, index1, row2);
-            SetRow(matrix, index2, row1);
+            resultMatrix = SetRow(resultMatrix, index1, row2);
+            resultMatrix = SetRow(resultMatrix, index2, row1);
 
-            return matrix;
+            return resultMatrix;
         }
         public static T[,] SetColumn(T[,] matrix, int columnIndex, T[] column)
         {
-            for (int r = 0; r < matrix.GetLength(0); r++)
+            var resultMatrix = matrix.Clone() as T[,];
+            for (int r = 0; r < resultMatrix.GetLength(0); r++)
             {
-                matrix[r, columnIndex] = column[r];
+                resultMatrix[r, columnIndex] = column[r];
             }
-            return matrix;
+            return resultMatrix;
         }
         public static T[,] SetRow(T[,] matrix, int rowIndex, T[] row)
         {
-            for (int c = 0; c < matrix.GetLength(1); c++)
+            var resultMatrix = matrix.Clone() as T[,];
+            for (int c = 0; c < resultMatrix.GetLength(1); c++)
             {
-                matrix[rowIndex, c] = row[c];
+                resultMatrix[rowIndex, c] = row[c];
             }
-            return matrix;
+            return resultMatrix;
         }
         public static T[] GetColumn(T[,] matrix, int columnIndex)
         {
@@ -360,6 +355,19 @@ public class Graph
             return Enumerable.Range(0, matrix.GetLength(1))
                 .Select(x => matrix[rowNumber, x])
                 .ToArray();
+        }
+
+        public static bool CompareRows(T[] row1, T[] row2)
+        {
+            if (row1.Length != row2.Length)
+                return false;
+            for (int i = 0; i < row1.Length; i++)
+            {
+                if (!EqualityComparer<T>.Default.Equals(row1[i], row2[i]))
+                    return false;
+            }
+
+            return true;
         }
     }
 

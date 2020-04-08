@@ -40,7 +40,7 @@ public class LevelManager : MonoBehaviour
 
     void CompareGraphs()
     {
-        CorrectnessCircle.SetColor(Graph.IsTwoGraphSame(graphPlayer, graphTarget)
+        CorrectnessCircle.SetColor(Graph.IsTwoGraphSameMatrix(graphPlayer, graphTarget)
             ? new Color(0.2f, 0.8f, 0.2f)
             : new Color(0.8f, 0.2f, 0.2f));
     }

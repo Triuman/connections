@@ -9,6 +9,7 @@ public class Node : MonoBehaviour
 {
     public Circle Circle;
     public int GraphId;
+    public int Index;
     public int Id { get; private set; }
     [SerializeField]
     private int colorId;
