@@ -1,15 +1,19 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Random = UnityEngine.Random;
 
 public class GraphEditor : MonoBehaviour
 {
     public float Scale = 1;
     public bool ProcessUserInput;
-    public GameObject NodePrefab;
+    public Node NodePrefab;
     public ConnectionLine ConnectionLinePrefab;
 
+
+    public event Action<Graph> OnGraphChange;
 
     private Graph graph;
     private List<ConnectionLine> connectionLines;
@@ -20,18 +24,32 @@ public class GraphEditor : MonoBehaviour
     void Start()
     {
         Id = Random.Range(1, 1000);
-        connectionLines = new List<ConnectionLine>();
+    }
 
+    public Graph InitGraph()
+    {
+        connectionLines = new List<ConnectionLine>();
         graph = new Graph();
-        Graph.AddNode(graph, Instantiate(NodePrefab, transform.position + new Vector3(-0.5f, 0.5f), Quaternion.identity, transform).GetComponent<Node>());
-        Graph.AddNode(graph, Instantiate(NodePrefab, transform.position + new Vector3(0.5f, 0.5f), Quaternion.identity, transform).GetComponent<Node>());
-        Graph.AddNode(graph, Instantiate(NodePrefab, transform.position + new Vector3(-0.5f, -0.5f), Quaternion.identity, transform).GetComponent<Node>());
-        Graph.AddNode(graph, Instantiate(NodePrefab, transform.position + new Vector3(0.5f, -0.5f), Quaternion.identity, transform).GetComponent<Node>());
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 6; j++)
+            {
+                Graph.AddNode(graph, Instantiate(NodePrefab, transform.position + new Vector3(-0.6f + i * 1.2f / 6, -0.6f + j * 1.2f / 6), Quaternion.identity, transform));
+            }
+        }
         Graph.SetNodeScale(graph, Scale);
+        graph.OnGraphChange += Graph_OnGraphChange;
 
         InputController.instance.OnMouseDown += OnMouseDown;
         InputController.instance.OnMouseMove += OnMouseMove;
         InputController.instance.OnMouseUp += OnMouseUp;
+
+        return graph;
+    }
+
+    private void Graph_OnGraphChange()
+    {
+        OnGraphChange?.Invoke(graph);
     }
 
     //When mouse down or touch on a Node, we will set this to that Node so that we can draw a line from the Node to latest mouse/touch position.
@@ -67,7 +85,7 @@ public class GraphEditor : MonoBehaviour
                     var node2 = hitTransform.GetComponent<Node>();
                     if (touchStartNode.Id != node2.Id && node2.GraphId == graph.Id)
                     {
-                        if (!Node.GetConnections(touchStartNode).Exists(n => n.Id == node2.Id))
+                        if (!touchStartNode.Connections.Exists(n => n.Id == node2.Id))
                         {
                             currentLine.SetPositions(touchStartNode.transform.position, hitTransform.position);
                         }
@@ -96,7 +114,7 @@ public class GraphEditor : MonoBehaviour
             else if (hitTransform.tag == "Node" && hitTransform.GetComponent<Node>().GraphId == graph.Id)
             {
                 var node2 = hitTransform.GetComponent<Node>();
-                if (touchStartNode && touchStartNode.Id != node2.Id && !Node.GetConnections(touchStartNode).Exists(n => n.Id == node2.Id))
+                if (touchStartNode && touchStartNode.Id != node2.Id && !touchStartNode.Connections.Exists(n => n.Id == node2.Id))
                 {
                     var node1 = touchStartNode;
                     currentLine.SetConnectedNodes(node1, node2);
@@ -104,6 +122,7 @@ public class GraphEditor : MonoBehaviour
                     connectionLines.Add(currentLine);
                     currentLine = null;
                     Graph.AddConnection(graph, node1.Id, node2.Id);
+                    
                 }
             }
         }

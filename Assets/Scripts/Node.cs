@@ -7,34 +7,40 @@ using Random = UnityEngine.Random;
 
 public class Node : MonoBehaviour
 {
+    public Circle Circle;
     public int GraphId;
     public int Id { get; private set; }
-    public int Number { get; private set; }
+    [SerializeField]
+    private int colorId;
+    public int ColorId
+    {
+        get => colorId;
+        set
+        {
+            colorId = value;
+            Circle.SetColor(StaticValues.ColorByIndex[ColorId]);
+        }
+}
 
     public float Scale
     {
         set => transform.localScale = new Vector3(value, value, value);
     }
 
-    private List<Node> Connections { get; set; }
+    public List<Node> Connections { get; set; }
 
     void Start()
     {
         SetRandomId(this);
-        SetNumber(this, 0);
+        ColorId = colorId;
         Connections = new List<Node>();
     }
 
 
-    public static Color GetColor(Node node) => StaticValues.ColorByIndex[node.Number];
-    public static void SetNumber(Node node, int number) => node.Number = number;
     /// <summary>
     /// In case there is a node with same Id in a graph, we can call this function from outside and add the node safely.
     /// </summary>
     public static void SetRandomId(Node node) => node.Id = Random.Range(1, 10000000);
-    public static void SetId(Node node, int id) => node.Id = id;
-    public static List<Node> SetConnections(Node node, List<Node> connections) => node.Connections = connections.ToList();
-    public static List<Node> GetConnections(Node node) => node?.Connections?.ToList();
     public static void ConnectNodes(Node node1, Node node2) => ConnectNodes(new List<Node>() { node1, node2 });
     public static void ConnectNodes(List<Node> nodes)
     {

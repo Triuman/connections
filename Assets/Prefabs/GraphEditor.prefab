@@ -45,7 +45,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Scale: 1
   ProcessUserInput: 0
-  NodePrefab: {fileID: 8667970890054956891, guid: c478b81606210bf4f9077fb5eb9d341e,
+  NodePrefab: {fileID: 5171584518165738224, guid: c478b81606210bf4f9077fb5eb9d341e,
     type: 3}
   ConnectionLinePrefab: {fileID: 1438111544626675464, guid: c560c132b72def2489b50129dc670472,
     type: 3}
