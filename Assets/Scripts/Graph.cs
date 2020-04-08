@@ -76,6 +76,9 @@ public class Graph
                     countOfIndex++;
             }
 
+            if (countOfIndex <= 0)
+                continue;
+
             if (!graph1IndexListPerCountDic.ContainsKey(countOfIndex))
                 graph1IndexListPerCountDic[countOfIndex] = new List<int>();
             graph1IndexListPerCountDic[countOfIndex].Add(i);
@@ -91,6 +94,9 @@ public class Graph
                 if (graph2MatrixTemp[i, j])
                     countOfIndex++;
             }
+
+            if (countOfIndex <= 0)
+                continue;
 
             if (!graph2IndexListPerCountDic.ContainsKey(countOfIndex))
                 graph2IndexListPerCountDic[countOfIndex] = new List<int>();
