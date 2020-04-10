@@ -11,12 +11,13 @@ public class Graph
     private readonly List<Node> nodes;
 
     private bool[,] graphMatrix;
+    private int[] colorIdByIndex;
     private const int GraphMatrixSize = 25; //TODO: make it 25
 
     public Graph()
     {
         graphMatrix = new bool[GraphMatrixSize, GraphMatrixSize];
-
+        colorIdByIndex = new int[GraphMatrixSize];
 
         nodes = new List<Node>();
         SetRandomId(this);
@@ -136,14 +137,14 @@ public class Graph
         // </not sorted>
         //
         // <sorted>
-        //     2 5 3 4 1 0
+        //     2 3 5 4 1 0
         //
         // 2   0 0 0 1 1 0
-        // 5   0 0 0 1 1 1
         // 3   0 0 0 1 1 0
+        // 5   0 0 0 1 1 1
         // 4   1 1 1 0 0 1
         // 1   1 1 1 0 0 1
-        // 0   0 1 0 1 1 0
+        // 0   0 0 1 1 1 0
         // </sorted>
         // 
 
@@ -178,6 +179,7 @@ public class Graph
             {
                 var rowGraph1 = MultiArrayHelper<bool>.GetRow(graph1MatrixTempCombination, i);
                 var rowGraph2 = MultiArrayHelper<bool>.GetRow(graph2MatrixTemp, i);
+                //TODO: Compare only if two rows/nodes has the same colorId. If not, combination is not correct.
                 if (!MultiArrayHelper<bool>.CompareRows(rowGraph1, rowGraph2))
                 {
                     isCombinationCorrect = false;
@@ -339,133 +341,7 @@ public class Graph
             return true;
         }
     }
-
-
-    public static void AddConnection(Graph graph, int nodeId1, int nodeId2)
-    {
-        var node1 = graph.nodes.FirstOrDefault(n => n.Id == nodeId1);
-        var node2 = graph.nodes.FirstOrDefault(n => n.Id == nodeId2);
-        Node.ConnectNodes(node1, node2);
-        graph.OnGraphChange?.Invoke();
-    }
-    public static void AddConnection(Graph graph, List<int> nodeIds)
-    {
-        var nodeList = new List<Node>();
-        foreach (var nodeId in nodeIds)
-        {
-            var node = graph.nodes.FirstOrDefault(n => n.Id == nodeId);
-            if (node == null)
-                throw new NullReferenceException("Node with id " + nodeId + " not found in Graph with id " + graph.Id);
-            nodeList.Add(node);
-        }
-        Node.ConnectNodes(nodeList);
-        graph.OnGraphChange?.Invoke();
-    }
-
-    public static void RemoveConnection(Graph graph, int nodeId1, int nodeId2)
-    {
-        var node1 = graph.nodes.FirstOrDefault(n => n.Id == nodeId1);
-        var node2 = graph.nodes.FirstOrDefault(n => n.Id == nodeId2);
-        Node.UnConnectNodes(node1, node2);
-        graph.OnGraphChange?.Invoke();
-    }
-    internal static void RemoveConnection(Graph graph, List<int> nodeIds)
-    {
-        var nodeList = new List<Node>();
-        foreach (var nodeId in nodeIds)
-        {
-            var node = graph.nodes.FirstOrDefault(n => n.Id == nodeId);
-            if (node == null)
-                throw new NullReferenceException("Node with id " + nodeId + " not found in Graph with id " + graph.Id);
-            nodeList.Remove(node);
-        }
-        Node.ConnectNodes(nodeList);
-        graph.OnGraphChange?.Invoke();
-    }
-    internal static bool IsTwoGraphSame(Graph graph1, Graph graph2)
-    {
-        //Compare the count of Nodes that have at least one connected node 
-        if (graph1.nodes.Count(n => n.Connections.Any()) != graph2.nodes.Count(n => n.Connections.Any()))
-        {
-            return false;
-        }
-
-        //Compare connection counts
-        if (graph1.nodes.Sum(n => n.Connections.Count) != graph2.nodes.Sum(n => n.Connections.Count))
-        {
-            return false;
-        }
-
-        //Compare connections node by node and color by color
-        var graph1ConnectionCountPerNode = new List<NodeConnection>();
-        foreach (Node graph1Node in graph1.nodes)
-        {
-            var connectedNodes = graph1Node.Connections;
-            if (connectedNodes.Count == 0)
-                continue;
-            var nodeConnectionDic = new NodeConnection()
-            {
-                ColorId = graph1Node.ColorId,
-                ConnectionColorCountDic = new Dictionary<int, int>()
-            };
-
-            foreach (Node connectedNode in connectedNodes)
-            {
-                if (!nodeConnectionDic.ConnectionColorCountDic.ContainsKey(connectedNode.ColorId))
-                    nodeConnectionDic.ConnectionColorCountDic.Add(connectedNode.ColorId, 0);
-                nodeConnectionDic.ConnectionColorCountDic[connectedNode.ColorId]++;
-            }
-            graph1ConnectionCountPerNode.Add(nodeConnectionDic);
-        }
-        foreach (Node graph2Node in graph2.nodes)
-        {
-            var connectedNodes = graph2Node.Connections;
-            if (connectedNodes.Count == 0)
-                continue;
-            var nodeConnectionDic = new NodeConnection()
-            {
-                ColorId = graph2Node.ColorId,
-                ConnectionColorCountDic = new Dictionary<int, int>()
-            };
-            foreach (Node connectedNode in connectedNodes)
-            {
-                if (!nodeConnectionDic.ConnectionColorCountDic.ContainsKey(connectedNode.ColorId))
-                    nodeConnectionDic.ConnectionColorCountDic.Add(connectedNode.ColorId, 0);
-                nodeConnectionDic.ConnectionColorCountDic[connectedNode.ColorId]++;
-            }
-
-            bool isMatched = false;
-            //Compare with the nodes with same colorId on the graph1
-            foreach (NodeConnection graph1NodeConnection in graph1ConnectionCountPerNode.Where(nc => nc.ColorId == graph2Node.ColorId).ToList())
-            {
-                var left = graph1NodeConnection.ConnectionColorCountDic
-                    .Where(entry => nodeConnectionDic.ConnectionColorCountDic[entry.Key] != entry.Value)
-                    .ToDictionary(entry => entry.Key, entry => entry.Value);
-                if (!left.Any())
-                {
-                    isMatched = true;
-                    graph1ConnectionCountPerNode.Remove(graph1NodeConnection);
-                    break;
-                }
-            }
-            //if we cannot match this one graph2 node in any of graph1 nodes, we say the graphs are not same
-            if (!isMatched)
-                return false;
-        }
-
-
-        //Compare lengts
-
-        //if we pass all the comparisons, we can safely say they are equal.
-        return true;
-    }
-
-
-    private class NodeConnection
-    {
-        public int ColorId { get; set; }
-        public Dictionary<int, int> ConnectionColorCountDic { get; set; } //<Color of the connected node, count of connected nodes in that Color>
-    }
+    
 }
 
 

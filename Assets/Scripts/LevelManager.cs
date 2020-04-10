@@ -51,3 +51,17 @@ public class LevelManager : MonoBehaviour
         
     }
 }
+
+public class Level
+{
+    public int[] ColorIds { get; set; }
+
+    //Target Graph Info
+    //List of Nodes
+    //  Position (0 to 1: this will be multiplied by width and height and scale of the GraphEditor)
+    //  Color Id
+
+    //List Connections (node1index, node2index)
+
+    //Player Graph Info
+}
