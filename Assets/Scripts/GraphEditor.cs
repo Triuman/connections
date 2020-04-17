@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 public class GraphEditor : MonoBehaviour
@@ -20,6 +18,9 @@ public class GraphEditor : MonoBehaviour
 
     private int Id;
 
+
+    private List<Node> nodes;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,8 +29,7 @@ public class GraphEditor : MonoBehaviour
 
     public Graph InitGraph()
     {
-        //Graph.IsTwoGraphSameMatrix(new Graph(), new Graph());
-
+        nodes = new List<Node>();
         connectionLines = new List<ConnectionLine>();
         graph = new Graph();
 
@@ -45,10 +45,13 @@ public class GraphEditor : MonoBehaviour
                     transform.position + new Vector3(-width / 2 + i * width / (columnCount - 1), -height / 2 + j * height / (rowCount - 1)), Quaternion.identity,
                     transform);
                 node.Index = (i * columnCount) + j;
-                Graph.AddNode(graph, node);
+               nodes.Add(node);
+               node.GraphId = graph.Id;
+               node.ColorId = (short)Random.Range(1, StaticValues.ColorByIndex.Length);
+               Graph.SetNodeColor(graph, nodes.Count - 1, node.ColorId);
             }
         }
-        Graph.SetNodeScale(graph, Scale);
+        SetNodeScale(Scale);
         graph.OnGraphChange += Graph_OnGraphChange;
 
         InputController.instance.OnMouseDown += OnMouseDown;
@@ -56,6 +59,14 @@ public class GraphEditor : MonoBehaviour
         InputController.instance.OnMouseUp += OnMouseUp;
 
         return graph;
+    }
+
+    public void SetNodeScale(float scale)
+    {
+        foreach (var node in nodes)
+        {
+            node.Scale = scale;
+        }
     }
 
     private void Graph_OnGraphChange()

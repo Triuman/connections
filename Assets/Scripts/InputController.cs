@@ -2,6 +2,8 @@
 
 public class InputController : MonoBehaviour
 {
+    public Camera MainCamera;
+
     public static InputController instance;
 
     public event System.Action<Vector2, Transform> OnMouseDown;
@@ -17,11 +19,11 @@ public class InputController : MonoBehaviour
     void Update()
     {
         //We transform the touch position into word space from screen space and store it.
-        Vector3 touchPosWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 touchPosWorld = MainCamera.ScreenToWorldPoint(Input.mousePosition);
         Vector2 touchPosWorld2D = new Vector2(touchPosWorld.x, touchPosWorld.y);
         Transform hitTransform = null;
         //We now raycast with this information. If we have hit something we can process it.
-        RaycastHit2D hitInformation = Physics2D.Raycast(touchPosWorld2D, Camera.main.transform.forward);
+        RaycastHit2D hitInformation = Physics2D.Raycast(touchPosWorld2D, MainCamera.transform.forward);
         if (hitInformation.transform)
             hitTransform = hitInformation.transform;
         else if(Physics.Raycast(touchPosWorld, Vector3.forward, out var hitInformation3D))

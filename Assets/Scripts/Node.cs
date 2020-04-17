@@ -8,14 +8,14 @@ public class Node : MonoBehaviour
     public int Id { get; private set; }
     public int Index { get; set; }
     [SerializeField]
-    private int colorId;
-    public int ColorId
+    private short colorId;
+    public short ColorId
     {
         get => colorId;
         set
         {
             colorId = value;
-            Circle.SetColor(StaticValues.ColorByIndex[ColorId]);
+            Circle.SetColor(StaticValues.ColorByIndex[ColorId - 1]);
         }
 }
 

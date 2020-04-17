@@ -8,61 +8,63 @@ public class Graph
 {
     public int Id { get; private set; }
     public event Action OnGraphChange;
-    private readonly List<Node> nodes;
 
-    private bool[,] graphMatrix;
+    private short[,] graphMatrix;
     private int[] colorIdByIndex;
     private const int GraphMatrixSize = 25; //TODO: make it 25
 
     public Graph()
     {
-        graphMatrix = new bool[GraphMatrixSize, GraphMatrixSize];
+        graphMatrix = new short[GraphMatrixSize, GraphMatrixSize];
         colorIdByIndex = new int[GraphMatrixSize];
 
-        nodes = new List<Node>();
         SetRandomId(this);
     }
     public static void SetRandomId(Graph graph) => graph.Id = Random.Range(1, 10000000);
     public static void SetId(Graph graph, int id) => graph.Id = id;
 
-    public static void SetNodeScale(Graph graph, float scale)
+    public static void SetNodeColor(Graph graph, int index, short colorId = 1)
     {
-        foreach (var node in graph.nodes)
-        {
-            node.Scale = scale;
-        }
-    }
+        //We keep colorId of each node on the diagonal of the matrix.
+        //And we put the colorId of connected node to say it is connected to that node.
+        //So, the matrix is not symetrical anymore.
 
-    public static void AddNode(Graph graph, Node node, int colorId = 0)
-    {
-        node.GraphId = graph.Id;
-        graph.nodes.Add(node);
-        node.ColorId = colorId;
+        //   0 1 2 3 4
+        // 0 2 3 0 0 2
+        // 1 2 3 0 2 0
+        // 2 0 0 5 0 0
+        // 3 0 3 0 2 2
+        // 4 2 0 0 2 2
+        graph.graphMatrix[index, index] = colorId;
         graph.OnGraphChange?.Invoke();
     }
 
 
     public static void AddConnectionMatrix(Graph graph, int node1Index, int node2Index)
     {
-        graph.graphMatrix[node1Index, node2Index] = true;
-        graph.graphMatrix[node2Index, node1Index] = true;
+        var node1Number = graph.graphMatrix[node1Index, node1Index];
+        var node2Number = graph.graphMatrix[node2Index, node2Index];
+        graph.graphMatrix[node1Index, node2Index] = node2Number;
+        graph.graphMatrix[node2Index, node1Index] = node1Number;
         graph.OnGraphChange?.Invoke();
     }
     public static void RemoveConnectionMatrix(Graph graph, int node1Index, int node2Index)
     {
-        graph.graphMatrix[node1Index, node2Index] = false;
-        graph.graphMatrix[node2Index, node1Index] = false;
+        graph.graphMatrix[node1Index, node2Index] = 0;
+        graph.graphMatrix[node2Index, node1Index] = 0;
         graph.OnGraphChange?.Invoke();
     }
     public static bool IsNodesConnectedMatrix(Graph graph, int node1Index, int node2Index)
     {
-        return graph.graphMatrix[node1Index, node2Index] && graph.graphMatrix[node2Index, node1Index];
+        var node1Number = graph.graphMatrix[node1Index, node1Index];
+        var node2Number = graph.graphMatrix[node2Index, node2Index];
+        return graph.graphMatrix[node1Index, node2Index] == node2Number && graph.graphMatrix[node2Index, node1Index] == node1Number;
     }
 
     internal static bool IsTwoGraphSameMatrix(Graph graph1, Graph graph2)
     {
-        var graph1MatrixTemp = graph1.graphMatrix.Clone() as bool[,];
-        var graph2MatrixTemp = graph2.graphMatrix.Clone() as bool[,];
+        var graph1MatrixTemp = graph1.graphMatrix.Clone() as short[,];
+        var graph2MatrixTemp = graph2.graphMatrix.Clone() as short[,];
 
         //Process matrix and put every node index into dictionary list by their connection count.
         //So, <5, [0,3,4]> means nodes 0,3 and 4 have 5 connections each.
@@ -73,7 +75,9 @@ public class Graph
             var countOfIndex = 0;
             for (int j = 0; j < GraphMatrixSize; j++)
             {
-                if (graph1MatrixTemp[i, j])
+                if (i == j)
+                    continue;
+                if (graph1MatrixTemp[i, j] > 0)
                     countOfIndex++;
             }
 
@@ -97,7 +101,9 @@ public class Graph
             var countOfIndex = 0;
             for (int j = 0; j < GraphMatrixSize; j++)
             {
-                if (graph2MatrixTemp[i, j])
+                if (i == j)
+                    continue;
+                if (graph2MatrixTemp[i, j] > 0)
                     countOfIndex++;
             }
 
@@ -157,7 +163,7 @@ public class Graph
             combinationGraph2.AddRange(graph2IndexListPerCountDic[graph2CountDicKey]);
         }
 
-        graph2MatrixTemp = MultiArrayHelper<bool>.OrderArray(graph2MatrixTemp, combinationGraph2);
+        graph2MatrixTemp = MultiArrayHelper<short>.OrderArray(graph2MatrixTemp, combinationGraph2);
 
 
         //Permutate graphMatrix1 and check if it matches with graphMatrix2
@@ -173,14 +179,15 @@ public class Graph
 
         foreach (List<int> combination in combinations)
         {
-            var graph1MatrixTempCombination = MultiArrayHelper<bool>.OrderArray(graph1MatrixTemp, combination);
+            var graph1MatrixTempCombination = MultiArrayHelper<short>.OrderArray(graph1MatrixTemp, combination);
             bool isCombinationCorrect = true;
-            for (int i = 0; i < GraphMatrixSize; i++)
+            for (int i = 0; i < combination.Count; i++)
             {
-                var rowGraph1 = MultiArrayHelper<bool>.GetRow(graph1MatrixTempCombination, i);
-                var rowGraph2 = MultiArrayHelper<bool>.GetRow(graph2MatrixTemp, i);
+                var rowGraph1 = MultiArrayHelper<short>.GetRow(graph1MatrixTempCombination, i);
+                var rowGraph2 = MultiArrayHelper<short>.GetRow(graph2MatrixTemp, i);
+                
                 //TODO: Compare only if two rows/nodes has the same colorId. If not, combination is not correct.
-                if (!MultiArrayHelper<bool>.CompareRows(rowGraph1, rowGraph2))
+                if (!MultiArrayHelper<short>.CompareRows(rowGraph1, rowGraph2))
                 {
                     isCombinationCorrect = false;
                     break;
@@ -341,7 +348,7 @@ public class Graph
             return true;
         }
     }
-    
+
 }
 
 
