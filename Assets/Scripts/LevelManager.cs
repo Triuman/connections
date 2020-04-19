@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
 {
     public GraphEditor graphEditorTarget;
     public GraphEditor graphEditorPlayer;
-
-    public Circle CorrectnessCircle; //This is for development only
-
+    
     private Graph graphPlayer = null;
     private Graph graphTarget = null;
 
@@ -45,9 +41,6 @@ public class LevelManager : MonoBehaviour
         var isSame = Graph.IsTwoGraphSameMatrix(graphPlayer, graphTarget);
         if(isSame)
             LoadNextLevel();
-        CorrectnessCircle.SetColor(isSame
-            ? new Color(0.2f, 0.8f, 0.2f)
-            : new Color(0.8f, 0.2f, 0.2f));
     }
 
     private void LoadNextLevel()
@@ -77,6 +70,22 @@ public class Level
     public Tuple<int, int>[] PlayerGraphConnections;
 }
 
+/// <summary>
+///
+///     Level Parameters
+///         - Target Node Count Scale 0-1 (min 2, max 6)
+///         - Target Color Count Scale 0-1 (min 1, max Node Count)
+///         - Target Connection Count Scale 0-1 (min 1, max Node Count factorial)
+/// 
+///         - Player Node Count Scale 0-1 (min Target Connected Node Count, max 6)
+///         - Player Color Count Scale 0-1 (min Target Connected Different Node Color Count, max Node Count)
+///         - Player Connection Count Scale 0-1 (min 1, max Node Count factorial)
+///
+/// 
+/// </summary>
+
+
+
 public static class LevelInfo
 {
     public static Level[] Levels = new[]
@@ -85,24 +94,26 @@ public static class LevelInfo
         {
             TargetGraphNodeColorIds = new []
             {
-                1,
-                1,
-                2,
-                3
+                1,2,3,4
             },
             TargetGraphConnections = new []
             {
                 new Tuple<int, int>(0,2),
-                new Tuple<int, int>(1,0),
+                new Tuple<int, int>(0,3),
+                new Tuple<int, int>(1,2),
+
             },
             PlayerGraphNodeColorIds = new []
             {
-                1,
-                1,
-                2,
-                3
+                1,2,3,4,2
             },
-            PlayerGraphConnections = new Tuple<int, int>[0]
+            PlayerGraphConnections = new []
+            {
+                new Tuple<int, int>(0,2),
+                new Tuple<int, int>(0,3),
+                new Tuple<int, int>(1,2),
+
+            },
         },
         new Level()
         {
@@ -139,7 +150,13 @@ public static class LevelInfo
                 1,
                 2,
                 3,
-                4
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
             },
             TargetGraphConnections = new []
             {

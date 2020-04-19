@@ -30,6 +30,14 @@ public class GraphEditor : MonoBehaviour
         InputController.instance.OnMouseUp += OnMouseUp;
     }
 
+    private void OnDestroy()
+    {
+        DestroyObjects();
+        InputController.instance.OnMouseDown -= OnMouseDown;
+        InputController.instance.OnMouseMove -= OnMouseMove;
+        InputController.instance.OnMouseUp -= OnMouseUp;
+    }
+
     public Graph InitGraph()
     {
         DestroyObjects();
@@ -98,11 +106,11 @@ public class GraphEditor : MonoBehaviour
             var newLine = Instantiate(ConnectionLinePrefab, new Vector2(0, 0), Quaternion.identity, transform);
             newLine.Scale = Scale;
             newLine.GraphId = graph.Id;
-            newLine.SetConnectedNodes(connection.Item1, nodes[connection.Item1].transform.position, connection.Item2, nodes[connection.Item2].transform.position);
+            newLine.SetConnectedNodes(connection.Item1, nodes[connection.Item1].transform.position, connection.Item2, nodes[connection.Item2].transform.position, StaticValues.ColorByIndex[nodeColorIds[connection.Item1] - 1], StaticValues.ColorByIndex[nodeColorIds[connection.Item2] - 1]);
             connectionLines.Add(newLine);
 
         }
-        SetNodeScale(Scale);
+        SetNodeScale(Scale / (matrixSize / 80f + 0.6f));
         graph.OnGraphChange += Graph_OnGraphChange;
 
         return graph;
@@ -209,7 +217,7 @@ public class GraphEditor : MonoBehaviour
                 if (touchStartNode && touchStartNode.Id != node2.Id && !Graph.IsNodesConnectedMatrix(graph, touchStartNode.Index, node2.Index))
                 {
                     var node1 = touchStartNode;
-                    currentLine.SetConnectedNodes(node1.Index, node1.transform.position, node2.Index, node2.transform.position);
+                    currentLine.SetConnectedNodes(node1.Index, node1.transform.position, node2.Index, node2.transform.position, StaticValues.ColorByIndex[node1.ColorId - 1], StaticValues.ColorByIndex[node2.ColorId - 1]);
                     currentLine.SetPositions(touchStartNode.transform.position, hitTransform.position);
                     connectionLines.Add(currentLine);
                     currentLine = null;

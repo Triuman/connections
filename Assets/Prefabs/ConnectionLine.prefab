@@ -121,7 +121,7 @@ LineRenderer:
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
-    numCapVertices: 72
+    numCapVertices: 5
     alignment: 0
     textureMode: 0
     shadowBias: 0.5
@@ -154,6 +154,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c0d0e09e1019774e949c2b078ccebb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Node1: {fileID: 0}
-  Node2: {fileID: 0}
   GraphId: 0
+  Node1Index: 0
+  Node2Index: 0
