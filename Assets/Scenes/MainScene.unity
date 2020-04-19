@@ -360,6 +360,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MainCamera: {fileID: 519420031}
+  LevelManager: {fileID: 940878761}
 --- !u!4 &1162173256
 Transform:
   m_ObjectHideFlags: 0

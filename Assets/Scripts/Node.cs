@@ -15,6 +15,7 @@ public class Node : MonoBehaviour
         set
         {
             colorId = value;
+            Debug.Log(value);
             Circle.SetColor(StaticValues.ColorByIndex[ColorId - 1]);
         }
     }

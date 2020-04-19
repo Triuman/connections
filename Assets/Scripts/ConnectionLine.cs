@@ -23,13 +23,15 @@ public class ConnectionLine : MonoBehaviour
         meshCollider = GetComponent<MeshCollider>();
         meshCollider.enabled = false;
     }
-    public void SetPositions(Vector2 pos1, Vector2 pos2)
+    public void SetPositions(Vector2 pos1, Vector2 pos2, Color color1, Color color2)
     {
         lineRenderer.positionCount = 4;
         lineRenderer.SetPosition(0, pos1);
         lineRenderer.SetPosition(1, Vector3.Lerp(pos1, pos2, 0.4f));
         lineRenderer.SetPosition(2, Vector3.Lerp(pos1, pos2, 0.6f));
         lineRenderer.SetPosition(3, pos2);
+
+        SetGradient(color1, color2);
     }
 
     public void SetConnectedNodes(int node1Index, Vector2 node1Position, int node2Index, Vector2 node2Position, Color node1Color, Color node2Color)
@@ -48,8 +50,8 @@ public class ConnectionLine : MonoBehaviour
         Destroy(meshCollider.sharedMesh);
         var width = lineRenderer.startWidth;
         //To make collider area bigger than visual, we increase the width and decrease back again after baking the mesh for collider.
-        lineRenderer.startWidth = width * 1.6f;
-        lineRenderer.endWidth = width * 1.6f;
+        lineRenderer.startWidth = width * 3f;
+        lineRenderer.endWidth = width * 3f;
         Mesh mesh = new Mesh();
         lineRenderer.BakeMesh(mesh, false);
         meshCollider.sharedMesh = mesh;

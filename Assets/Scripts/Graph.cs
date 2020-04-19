@@ -18,21 +18,22 @@ public class Graph
 
         SetRandomId(this);
     }
-    public Graph(int[] nodeColorIds, Tuple<int, int>[] connections)
+    public Graph(int[] nodeColorIds, int[] connections)
     {
-        graphMatrix =  new int[nodeColorIds.Length, nodeColorIds.Length];
+        graphMatrix = new int[nodeColorIds.Length, nodeColorIds.Length];
         for (int i = 0; i < nodeColorIds.Length; i++)
         {
             graphMatrix[i, i] = nodeColorIds[i];
         }
 
-        for (int c = 0; c < connections.Length; c++)
+        for (int c = 0; c < connections.Length; c += 2)
         {
-            var connection = connections[c];
-            if (connection.Item1 == connection.Item2)
+            var connectionNode1 = connections[c];
+            var connectionNode2 = connections[c + 1];
+            if (connectionNode1 == connectionNode2)
                 continue;
-            graphMatrix[connection.Item1, connection.Item2] = nodeColorIds[connection.Item2];
-            graphMatrix[connection.Item2, connection.Item1] = nodeColorIds[connection.Item1];
+            graphMatrix[connectionNode1, connectionNode2] = nodeColorIds[connectionNode2];
+            graphMatrix[connectionNode2, connectionNode1] = nodeColorIds[connectionNode1];
         }
 
         SetRandomId(this);
@@ -210,7 +211,7 @@ public class Graph
             {
                 var rowGraph1 = MultiArrayHelper<int>.GetRow(graph1MatrixTempCombination, i);
                 var rowGraph2 = MultiArrayHelper<int>.GetRow(graph2MatrixTemp, i);
-                
+
                 if (!MultiArrayHelper<int>.CompareRows(rowGraph1, rowGraph2))
                 {
                     isCombinationCorrect = false;

@@ -3,6 +3,7 @@
 public class InputController : MonoBehaviour
 {
     public Camera MainCamera;
+    public LevelManager LevelManager;
 
     public static InputController instance;
 
@@ -38,5 +39,10 @@ public class InputController : MonoBehaviour
 
         if (Input.GetMouseButtonUp(0))
             OnMouseUp?.Invoke(touchPosWorld2D, hitTransform);
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            LevelManager.LoadLevel(0);
+        }
     }
 }

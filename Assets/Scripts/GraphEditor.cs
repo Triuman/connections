@@ -74,7 +74,7 @@ public class GraphEditor : MonoBehaviour
         return graph;
     }
 
-    public Graph InitGraph(int[] nodeColorIds, Tuple<int, int>[] connections)
+    public Graph InitGraph(int[] nodeColorIds, int[] connections)
     {
         DestroyObjects();
 
@@ -82,31 +82,35 @@ public class GraphEditor : MonoBehaviour
         connectionLines = new List<ConnectionLine>();
         graph = new Graph(nodeColorIds, connections);
 
+        //To mix things more
+        var startAngle = Random.value * Mathf.PI * 2;
+
         int matrixSize = nodeColorIds.Length;
         var angle = Mathf.PI * 2 / matrixSize;
         var radius = matrixSize / 15f + 0.2f;
         for (int i = 0; i < matrixSize; i++)
         {
-            var node = Instantiate(NodePrefab, transform.position + new Vector3(Mathf.Cos(angle * i + Mathf.PI) * radius, Mathf.Sin(angle * i + Mathf.PI) * radius) * Scale, Quaternion.identity, transform);
+            var node = Instantiate(NodePrefab, transform.position + new Vector3(Mathf.Cos(angle * i + startAngle) * radius, Mathf.Sin(angle * i + startAngle) * radius) * Scale, Quaternion.identity, transform);
             node.Index = i;
             node.GraphId = graph.Id;
             node.ColorId = nodeColorIds[i];
             nodes.Add(node);
         }
 
-        for (int c = 0; c < connections.Length; c++)
+        for (int c = 0; c < connections.Length; c+=2)
         {
-            var connection = connections[c];
-            if(connection.Item1 == connection.Item2)
+            var connectionNode1 = connections[c];
+            var connectionNode2 = connections[c + 1];
+            if(connectionNode1 == connectionNode2)
                 continue;
-            if (connectionLines.Exists(cn => cn.Node1Index == connection.Item1 && cn.Node2Index == connection.Item2 || cn.Node1Index == connection.Item2 && cn.Node2Index == connection.Item1))
+            if (connectionLines.Exists(cn => cn.Node1Index == connectionNode1 && cn.Node2Index == connectionNode2 || cn.Node1Index == connectionNode2 && cn.Node2Index == connectionNode1))
                 continue;
 
             //TODO: make line's color gradient between node colors.
             var newLine = Instantiate(ConnectionLinePrefab, new Vector2(0, 0), Quaternion.identity, transform);
             newLine.Scale = Scale;
             newLine.GraphId = graph.Id;
-            newLine.SetConnectedNodes(connection.Item1, nodes[connection.Item1].transform.position, connection.Item2, nodes[connection.Item2].transform.position, StaticValues.ColorByIndex[nodeColorIds[connection.Item1] - 1], StaticValues.ColorByIndex[nodeColorIds[connection.Item2] - 1]);
+            newLine.SetConnectedNodes(connectionNode1, nodes[connectionNode1].transform.position, connectionNode2, nodes[connectionNode2].transform.position, StaticValues.ColorByIndex[nodeColorIds[connectionNode1] - 1], StaticValues.ColorByIndex[nodeColorIds[connectionNode2] - 1]);
             connectionLines.Add(newLine);
 
         }
@@ -166,7 +170,7 @@ public class GraphEditor : MonoBehaviour
             currentLine = Instantiate(ConnectionLinePrefab, new Vector2(0, 0), Quaternion.identity, transform);
             currentLine.Scale = Scale;
             currentLine.GraphId = graph.Id;
-            currentLine.SetPositions(touchStartNode.transform.position, touchPos);
+            currentLine.SetPositions(touchStartNode.transform.position, touchPos, StaticValues.ColorByIndex[touchStartNode.ColorId-1], StaticValues.ColorByIndex[touchStartNode.ColorId - 1]);
         }
     }
 
@@ -176,7 +180,7 @@ public class GraphEditor : MonoBehaviour
             return;
         if (touchStartNode && currentLine)
         {
-            currentLine.SetPositions(touchStartNode.transform.position, touchPos);
+            currentLine.SetPositions(touchStartNode.transform.position, touchPos, StaticValues.ColorByIndex[touchStartNode.ColorId - 1], StaticValues.ColorByIndex[touchStartNode.ColorId - 1]);
 
             if (hitTransform)
             {
@@ -187,7 +191,7 @@ public class GraphEditor : MonoBehaviour
                     {
                         if (!Graph.IsNodesConnectedMatrix(graph, touchStartNode.Index, node2.Index))
                         {
-                            currentLine.SetPositions(touchStartNode.transform.position, hitTransform.position);
+                            currentLine.SetPositions(touchStartNode.transform.position, hitTransform.position, StaticValues.ColorByIndex[touchStartNode.ColorId - 1], StaticValues.ColorByIndex[node2.ColorId - 1]);
                         }
                     }
                 }
@@ -218,7 +222,6 @@ public class GraphEditor : MonoBehaviour
                 {
                     var node1 = touchStartNode;
                     currentLine.SetConnectedNodes(node1.Index, node1.transform.position, node2.Index, node2.transform.position, StaticValues.ColorByIndex[node1.ColorId - 1], StaticValues.ColorByIndex[node2.ColorId - 1]);
-                    currentLine.SetPositions(touchStartNode.transform.position, hitTransform.position);
                     connectionLines.Add(currentLine);
                     currentLine = null;
                     Graph.AddConnectionMatrix(graph, node1.Index, node2.Index);
