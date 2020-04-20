@@ -25,12 +25,13 @@ public class InputController : MonoBehaviour
         Transform hitTransform = null;
         //We now raycast with this information. If we have hit something we can process it.
         RaycastHit2D hitInformation = Physics2D.Raycast(touchPosWorld2D, MainCamera.transform.forward);
-        if (hitInformation.transform)
-            hitTransform = hitInformation.transform;
-        else if(Physics.Raycast(touchPosWorld, Vector3.forward, out var hitInformation3D))
+        if (Physics.Raycast(touchPosWorld, Vector3.forward, out var hitInformation3D))
         {
             hitTransform = hitInformation3D.transform;
         }
+        else if (hitInformation.transform)
+            hitTransform = hitInformation.transform;
+         
         if (Input.GetMouseButtonDown(0))
             OnMouseDown?.Invoke(touchPosWorld2D, hitTransform);
 

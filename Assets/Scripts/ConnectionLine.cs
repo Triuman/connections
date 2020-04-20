@@ -38,7 +38,25 @@ public class ConnectionLine : MonoBehaviour
     {
         Node1Index = node1Index;
         Node2Index = node2Index;
+        
+        //To make collider smaller and stay in the middle of two circles.
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, Vector3.Lerp(node1Position, node2Position, 0.35f));
+        lineRenderer.SetPosition(1, Vector3.Lerp(node1Position, node2Position, 0.65f));
 
+        Destroy(meshCollider.sharedMesh);
+        var width = lineRenderer.startWidth;
+        //To make collider area bigger than visual, we increase the width and decrease back again after baking the mesh for collider.
+        lineRenderer.startWidth = width * 4f;
+        lineRenderer.endWidth = width * 4f;
+        Mesh mesh = new Mesh();
+        lineRenderer.BakeMesh(mesh, false);
+        meshCollider.sharedMesh = mesh;
+        meshCollider.enabled = true;
+        lineRenderer.startWidth = width;
+        lineRenderer.endWidth = width;
+
+        //Real setup after baking collider mesh
         lineRenderer.positionCount = 4;
         lineRenderer.SetPosition(0, node1Position);
         lineRenderer.SetPosition(1, Vector3.Lerp(node1Position, node2Position, 0.4f));
@@ -46,18 +64,6 @@ public class ConnectionLine : MonoBehaviour
         lineRenderer.SetPosition(3, node2Position);
 
         SetGradient(node1Color, node2Color);
-        
-        Destroy(meshCollider.sharedMesh);
-        var width = lineRenderer.startWidth;
-        //To make collider area bigger than visual, we increase the width and decrease back again after baking the mesh for collider.
-        lineRenderer.startWidth = width * 3f;
-        lineRenderer.endWidth = width * 3f;
-        Mesh mesh = new Mesh();
-        lineRenderer.BakeMesh(mesh, false);
-        meshCollider.sharedMesh = mesh;
-        meshCollider.enabled = true;
-        lineRenderer.startWidth = width;
-        lineRenderer.endWidth = width;
     }
 
     private void SetGradient(Color color1, Color color2)
