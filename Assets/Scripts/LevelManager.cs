@@ -67,15 +67,14 @@ public class LevelManager : MonoBehaviour
     {
         //TODO: All Random numbers will be coming from a procedural function that takes levelNo and returns a value.
 
-        const int maxNodeCount = 6;
         const int minNodeCount = 2;
 
         //Target Graph Setup
         float targetNodeCountScale = Random.Range(0f, 1f);
-        float targetColorCountScale = Random.Range(0f, 1f);
+        float targetColorCountScale = Random.Range(0.0f, 1.0f);
         float targetConnectionCountScale = Random.Range(0f, 1f);
 
-        int targetNodeCount = Mathf.CeilToInt(targetNodeCountScale * (maxNodeCount - minNodeCount)) + minNodeCount;
+        int targetNodeCount = Mathf.CeilToInt(targetNodeCountScale * (StaticValues.MaxNodeCountPerGraph - minNodeCount)) + minNodeCount;
         int targetColorCount = Mathf.CeilToInt((Mathf.Min(targetNodeCount, StaticValues.ColorByIndex.Length) - 1) * targetColorCountScale) + 1;
         int targetConnectionCount = Mathf.CeilToInt((StaticValues.MaxConnectionCountByNodeCount[targetNodeCount] - 1) * targetConnectionCountScale) + 1;
 
@@ -85,7 +84,7 @@ public class LevelManager : MonoBehaviour
         float playerColorCountScale = Random.Range(0f, 1f);
         float playerConnectionCountScale = Random.Range(0f, 1f);
 
-        int playerNodeCount = Mathf.CeilToInt(playerNodeCountScale * (maxNodeCount - targetNodeCount)) + targetNodeCount;
+        int playerNodeCount = Mathf.CeilToInt(playerNodeCountScale * (StaticValues.MaxNodeCountPerGraph - targetNodeCount)) + targetNodeCount;
 
 
         var level = new Level();

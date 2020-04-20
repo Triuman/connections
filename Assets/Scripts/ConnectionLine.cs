@@ -23,6 +23,18 @@ public class ConnectionLine : MonoBehaviour
         meshCollider = GetComponent<MeshCollider>();
         meshCollider.enabled = false;
     }
+
+    public void UpdateNodePosition(int nodeIndex, Vector3 pos)
+    {
+        if (Node1Index == nodeIndex)
+        {
+            SetConnectedNodes(Node1Index, pos, Node2Index, lineRenderer.GetPosition(lineRenderer.positionCount - 1));
+        }else if (Node2Index == nodeIndex)
+        {
+            SetConnectedNodes(Node1Index, lineRenderer.GetPosition(0), Node2Index, pos);
+        }
+    }
+    
     public void SetPositions(Vector2 pos1, Vector2 pos2, Color color1, Color color2)
     {
         lineRenderer.positionCount = 4;
@@ -34,11 +46,11 @@ public class ConnectionLine : MonoBehaviour
         SetGradient(color1, color2);
     }
 
-    public void SetConnectedNodes(int node1Index, Vector2 node1Position, int node2Index, Vector2 node2Position, Color node1Color, Color node2Color)
+    private void SetConnectedNodes(int node1Index, Vector2 node1Position, int node2Index, Vector2 node2Position)
     {
         Node1Index = node1Index;
         Node2Index = node2Index;
-        
+
         //To make collider smaller and stay in the middle of two circles.
         lineRenderer.positionCount = 2;
         lineRenderer.SetPosition(0, Vector3.Lerp(node1Position, node2Position, 0.35f));
@@ -62,6 +74,12 @@ public class ConnectionLine : MonoBehaviour
         lineRenderer.SetPosition(1, Vector3.Lerp(node1Position, node2Position, 0.4f));
         lineRenderer.SetPosition(2, Vector3.Lerp(node1Position, node2Position, 0.6f));
         lineRenderer.SetPosition(3, node2Position);
+    }
+
+
+    public void SetConnectedNodes(int node1Index, Vector2 node1Position, int node2Index, Vector2 node2Position, Color node1Color, Color node2Color)
+    {
+        SetConnectedNodes(node1Index, node1Position, node2Index, node2Position);
 
         SetGradient(node1Color, node2Color);
     }

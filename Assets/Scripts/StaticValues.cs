@@ -2,6 +2,8 @@
 
 public static class StaticValues
 {
+    public static int MaxNodeCountPerGraph = 10;
+
     public static Color32[] ColorByIndex = new Color32[]
     {
         new Color32(77, 77, 77, 255),

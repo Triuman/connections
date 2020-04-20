@@ -112,7 +112,8 @@ public class GraphEditor : MonoBehaviour
             newLine.GraphId = graph.Id;
             newLine.SetConnectedNodes(connectionNode1, nodes[connectionNode1].transform.position, connectionNode2, nodes[connectionNode2].transform.position, StaticValues.ColorByIndex[nodeColorIds[connectionNode1] - 1], StaticValues.ColorByIndex[nodeColorIds[connectionNode2] - 1]);
             connectionLines.Add(newLine);
-
+            nodes[connectionNode1].lines.Add(newLine);
+            nodes[connectionNode2].lines.Add(newLine);
         }
         SetNodeScale(Scale / (matrixSize / 80f + 0.6f));
         graph.OnGraphChange += Graph_OnGraphChange;
@@ -154,6 +155,31 @@ public class GraphEditor : MonoBehaviour
     private void Graph_OnGraphChange()
     {
         OnGraphChange?.Invoke(graph);
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            SwapNodes();
+        }
+    }
+
+    void SwapNodes()
+    {
+        var node1Index = Random.Range(0, nodes.Count);
+        var node2Index = Random.Range(0, nodes.Count);
+
+        if (node1Index == node2Index)
+        {
+            SwapNodes();
+            return;
+        }
+
+        var node1Pos = nodes[node1Index].Position;
+        var node2Pos = nodes[node2Index].Position;
+        nodes[node1Index].MoveTo(node2Pos, 0.2f);
+        nodes[node2Index].MoveTo(node1Pos, 0.2f);
     }
 
     //When mouse down or touch on a Node, we will set this to that Node so that we can draw a line from the Node to latest mouse/touch position.
@@ -212,6 +238,8 @@ public class GraphEditor : MonoBehaviour
                 {
                     Graph.RemoveConnectionMatrix(graph, line.Node1Index, line.Node2Index);
                     connectionLines.Remove(line);
+                    nodes[line.Node1Index].lines.Remove(line);
+                    nodes[line.Node2Index].lines.Remove(line);
                     Destroy(line.gameObject);
                 }
             }
@@ -223,6 +251,8 @@ public class GraphEditor : MonoBehaviour
                     var node1 = touchStartNode;
                     currentLine.SetConnectedNodes(node1.Index, node1.transform.position, node2.Index, node2.transform.position, StaticValues.ColorByIndex[node1.ColorId - 1], StaticValues.ColorByIndex[node2.ColorId - 1]);
                     connectionLines.Add(currentLine);
+                    node1.lines.Add(currentLine);
+                    node2.lines.Add(currentLine);
                     currentLine = null;
                     Graph.AddConnectionMatrix(graph, node1.Index, node2.Index);
 
