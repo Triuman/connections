@@ -58,8 +58,8 @@ public class LevelManager : MonoBehaviour
             levelNo = 1;
         var level = GetLevel(levelNo); // LevelInfo.Levels[levelIndex];
 
-        graphTarget = graphEditorTarget.InitGraph(level.TargetGraphNodeColorIds, level.TargetGraphConnections);
-        graphPlayer = graphEditorPlayer.InitGraph(level.PlayerGraphNodeColorIds, level.PlayerGraphConnections);
+        graphTarget = graphEditorTarget.InitGraph(level.TargetGraphNodeColorIds, level.TargetGraphConnections, 0);
+        graphPlayer = graphEditorPlayer.InitGraph(level.PlayerGraphNodeColorIds, level.PlayerGraphConnections, level.PlayerGraphTotalLineCount);
     }
 
 
@@ -70,9 +70,9 @@ public class LevelManager : MonoBehaviour
         const int minNodeCount = 2;
 
         //Target Graph Setup
-        float targetNodeCountScale = Random.Range(0f, 1f);
-        float targetColorCountScale = Random.Range(0.0f, 1.0f);
-        float targetConnectionCountScale = Random.Range(0f, 1f);
+        float targetNodeCountScale = Random.Range(0f, 0.8f);
+        float targetColorCountScale = Random.Range(0.0f, 0.2f);
+        float targetConnectionCountScale = Random.Range(0.2f, 0.5f);
 
         int targetNodeCount = Mathf.CeilToInt(targetNodeCountScale * (StaticValues.MaxNodeCountPerGraph - minNodeCount)) + minNodeCount;
         int targetColorCount = Mathf.CeilToInt((Mathf.Min(targetNodeCount, StaticValues.ColorByIndex.Length) - 1) * targetColorCountScale) + 1;
@@ -88,6 +88,10 @@ public class LevelManager : MonoBehaviour
 
 
         var level = new Level();
+
+        //TODO: Make this decided by level parameters.
+        level.TargetGraphTotalLineCount = 0;
+        level.PlayerGraphTotalLineCount = targetConnectionCount + 10;
 
         //Create Target Node Array
         level.TargetGraphNodeColorIds = new int[targetNodeCount];
@@ -171,8 +175,10 @@ public class Level
 {
     public int[] TargetGraphNodeColorIds;
     public int[] TargetGraphConnections;
+    public int TargetGraphTotalLineCount;
     public int[] PlayerGraphNodeColorIds;
     public int[] PlayerGraphConnections;
+    public int PlayerGraphTotalLineCount;
 }
 
 

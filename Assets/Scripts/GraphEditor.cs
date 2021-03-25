@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class GraphEditor : MonoBehaviour
@@ -9,7 +10,7 @@ public class GraphEditor : MonoBehaviour
     public bool ProcessUserInput;
     public Node NodePrefab;
     public ConnectionLine ConnectionLinePrefab;
-
+    public Text TxtRemainingLineCount;
 
     public event Action<Graph> OnGraphChange;
 
@@ -20,6 +21,8 @@ public class GraphEditor : MonoBehaviour
 
 
     private List<Node> nodes;
+
+    private int remainingLineCount;
 
     // Start is called before the first frame update
     void Start()
@@ -74,10 +77,16 @@ public class GraphEditor : MonoBehaviour
         return graph;
     }
 
-    public Graph InitGraph(int[] nodeColorIds, int[] connections)
+    public Graph InitGraph(int[] nodeColorIds, int[] connections, int lineCount)
     {
         DestroyObjects();
 
+        if (TxtRemainingLineCount)
+        {
+            TxtRemainingLineCount.text = lineCount.ToString();
+        }
+
+        remainingLineCount = lineCount;
         nodes = new List<Node>();
         connectionLines = new List<ConnectionLine>();
         graph = new Graph(nodeColorIds, connections);
@@ -188,7 +197,7 @@ public class GraphEditor : MonoBehaviour
 
     private void OnMouseDown(Vector2 touchPos, Transform hitTransform)
     {
-        if (!ProcessUserInput)
+        if (!ProcessUserInput || remainingLineCount <= 0)
             return;
         if (hitTransform && hitTransform.tag == "Node" && hitTransform.GetComponent<Node>().GraphId == graph.Id)
         {
@@ -255,7 +264,10 @@ public class GraphEditor : MonoBehaviour
                     node2.lines.Add(currentLine);
                     currentLine = null;
                     Graph.AddConnectionMatrix(graph, node1.Index, node2.Index);
-
+                    --remainingLineCount; 
+                    if (TxtRemainingLineCount)
+                        TxtRemainingLineCount.text = remainingLineCount.ToString();
+                    
                 }
             }
         }
